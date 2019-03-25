@@ -1,0 +1,266 @@
+
+## subscribe 
+
+mutation create_influencer(
+        $email: String,
+        $passwordHash: String,
+        $name: String,
+        $surname: String,
+    ) { 
+    createInfluencer(data: {
+        email: $email,
+        password: $passwordHash,
+        instagram: {
+            create: {
+                  username: $username,
+                  url: $url,
+            }
+        },
+        personal: {
+            create: {
+                name: $name,
+                surname: $surname,
+                state: $state,
+                language: $language,
+            }
+        }
+    }) { email }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## web create campaign
+
+# get the filtered available influencers
+query available_influencers(
+       $states: [String],
+       $minLikes: Int = 0
+       $maxFollowing: Int = 100000,
+       $minPostFrequency: Float = 0
+    ) {
+    influencers( where: {
+        personal: { 
+            interests_some: { value: $interest },
+            state_in: $states,
+            language_in: $languages,
+            sex_in: $genders,
+        },
+        instagram: {
+            averageLikes_gt: $minLikes,
+            followers_gt: $minFollowers,
+            following_lt: $maxFollowing,
+            postFrequency_gt: $minPostFrequency
+        },
+    }) { 
+        instagram {
+            username
+            url
+        }
+        personal {
+            interests
+            latitude
+            longitude
+        }
+    }
+}
+
+# create task based on influencers and task data
+mutation create_task (
+        $deadline: DateTime,
+        $type: TaskType,
+        $influencers: [InfluencerWhereUniqueInput],
+        $data: Json,
+    ) {
+    createTask(data: {
+        type: $type,
+        pendingInfluencers: { connect: $influencers },
+        deadline: $deadline,
+        data: $data,
+    } { type }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## bots jobs from tasks
+
+
+# get the tasks that bots still have to accept
+query get_pending_bots_tasks(
+        $today: DateTime,
+    ) {
+    tasks(where: {
+        deadline_gt: $today,
+        pendingInfluencers_some: {
+            bot: true
+        }
+    }) { 
+        pendingInfluencers {
+            id
+            name
+            bot
+            instagram {
+                username
+            }
+        }
+    }
+}
+
+# for every task
+
+# filter returned influencers by bot: true and get the usernames
+
+# add a script that resembles the task
+mutation update_bots_script(
+        $script: Json,
+        $usernames: [String],
+    ) {
+    updateManyInstagramBots(
+        where: {
+            username_in: $usernames,
+        },
+        data: {
+            jobConfig: {
+                update: {
+                    nextScript: $script,
+                    # additionalScript: $script
+                }
+            }
+        }
+    ) { username }
+}
+
+
+# remove the bots influencers from pendingInfluencers in the task
+mutation update_bots_tasks_as_active(
+        $bots: [InfluencerWhereUniqueInput],
+        $id: ID,
+    ) {
+    updateTask(
+        where: {
+            id: $id
+        },
+        data: {
+            pendingInfluencers: {
+                disconnect: $bots
+            },
+            activeInfluencers: {
+                connect: $bots
+            }
+        }
+    ) { id }
+}
+
+
+
+     
+            
+        
+
+## SEND NOTIFICATION TO REAL INFLUENCERS
+
+
+# get the tasks that bots still have to accept
+query get_pending_bots_tasks(
+        $today: DateTime,
+    ) {
+    tasks(where: {
+        deadline_gt: $today,
+        pendingInfluencers_some: {
+            bot: false
+        }
+    }) { 
+        pendingInfluencers {
+            id
+            name
+            bot
+            instagram {
+                username
+            }
+            notification {
+                webhook
+            }
+        }
+    }
+}
+
+# for every task
+
+# filter returned influencers by bot: false and get notification data
+
+# send the notification
+
+# remove the bots influencers from pendingInfluencers in the task
+mutation update_bots_tasks_as_active(
+        $influencers: [InfluencerWhereUniqueInput],
+        $id: ID,
+    ) {
+    updateTask(
+        where: {
+            id: $id
+        },
+        data: {
+            pendingInfluencers: {
+                disconnect: $influencers
+            },
+            notifiedInfluencers: {
+                connect: $influencers
+            }
+        }
+    ) { id }
+}
+
+
+# add influencer to active after he accepts
+mutation update_bots_tasks_as_active(
+        $influencerId: ID,
+        $id: ID,
+    ) {
+    updateTask(
+        where: {
+            id: $id
+        },
+        data: {
+            notifiedInfluencers: {
+                disconnect: [{ 
+                    id: $influencerId
+                }]
+            },
+            activeInfluencers: {
+                connect: [{ 
+                    id: $influencerId
+                }]
+            },
+        }
+    ) { id }
+}
+
+                

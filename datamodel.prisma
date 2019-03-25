@@ -3,9 +3,16 @@ type Task {
     type: TaskType
     data: Json
     deadline: DateTime
+    
+    completed: Boolean @default(value: false) # completed after the worker evaluates (deadline == today())
+    active: Boolean @default(value: false) # active only after the client pays
     pendingInfluencers: [Influencer] @relation(name: "PendingTasksAndInfluencers")
     notifiedInfluencers: [Influencer] @relation(name: "NotifiedTasksAndInfluencers")
     activeInfluencers: [Influencer] @relation(name: "ActiveTasksAndInfluencers")
+    
+    # influencersToNotify
+    # influencersToCheck
+    # influencersToPay
 }
 
 enum TaskType {
@@ -16,6 +23,7 @@ enum TaskType {
 
 type Influencer {
     id: ID! @id
+    bot: Boolean
     email: String @unique
     name: String
     surname: String
@@ -53,8 +61,8 @@ type Interest {
 }
 
 type InstagramData {
-    influencer: Influencer
     id: ID! @id
+    influencer: Influencer
     username: String @unique
     followers: Int
     following: Int
