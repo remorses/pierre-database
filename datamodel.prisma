@@ -20,8 +20,8 @@ type Influencer {
     name: String
     surname: String
     password: String
-    instagram: InstagramData
-    personal: PersonalData
+    instagram: InstagramData @relation(link: INLINE)
+    personal: PersonalData @relation(link: INLINE)
     pendingTasks: [Task] @relation(link: INLINE, name: "PendingTasksAndInfluencers")
     notifiedTasks: [Task] @relation(link: INLINE, name: "NotifiedTasksAndInfluencers")
     activeTasks: [Task] @relation(link: INLINE, name: "ActiveTasksAndInfluencers")
@@ -29,6 +29,7 @@ type Influencer {
 
 type PersonalData {
     id: ID! @id
+    influencer: Influencer
     interests: [Interest] @relation(link: INLINE)
     bio: String
     age: Int
@@ -52,6 +53,7 @@ type Interest {
 }
 
 type InstagramData {
+    influencer: Influencer
     id: ID! @id
     username: String @unique
     followers: Int
