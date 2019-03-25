@@ -54,8 +54,8 @@ type Interest {
 type InstagramData {
     id: ID! @id
     username: String @unique
-    followers: Integer
-    following: Integer
+    followers: Int
+    following: Int
     averageLikes: Float
     postFrequency: Float
     storyFrequency: Float
