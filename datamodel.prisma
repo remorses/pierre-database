@@ -4,9 +4,9 @@ type Task {
     data: Json
     deadline: DateTime
     pendingInfluencers: [Influencer] @relation(name: "PendingTasksAndInfluencers")
+    notifiedInfluencers: [Influencer] @relation(name: "NotifiedTasksAndInfluencers")
     activeInfluencers: [Influencer] @relation(name: "ActiveTasksAndInfluencers")
 }
-
 
 enum TaskType {
     INSTAGRAM_POST
@@ -14,24 +14,35 @@ enum TaskType {
     FACEBOOK_POST
 }
 
-
 type Influencer {
     id: ID! @id
-    email: String
+    email: String @unique
     name: String
     surname: String
     password: String
     instagram: InstagramData
     personal: PersonalData
     pendingTasks: [Task] @relation(link: INLINE, name: "PendingTasksAndInfluencers")
+    notifiedTasks: [Task] @relation(link: INLINE, name: "NotifiedTasksAndInfluencers")
     activeTasks: [Task] @relation(link: INLINE, name: "ActiveTasksAndInfluencers")
 }
-
 
 type PersonalData {
     id: ID! @id
     interests: [Interest] @relation(link: INLINE)
     bio: String
+    age: Int
+    sex: Sex
+    state: String
+    language: String
+    latitude: Float
+    longitude: Float
+}
+
+enum Sex {
+    MALE
+    FEMALE
+    NONE
 }
 
 type Interest {
@@ -42,7 +53,7 @@ type Interest {
 
 type InstagramData {
     id: ID! @id
-    username: String
+    username: String @unique
     followers: Integer
     following: Integer
     averageLikes: Float
