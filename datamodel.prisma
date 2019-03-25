@@ -1,4 +1,58 @@
-type User {
-  id: ID! @id
-  name: String!
+type Task {
+    id: ID! @id
+    type: TaskType
+    data: Json
+    deadline: DateTime
+    pendingInfluencers: [Influencer] @relation(name: "PendingTasksAndInfluencers")
+    activeInfluencers: [Influencer] @relation(name: "ActiveTasksAndInfluencers")
 }
+
+
+enum TaskType {
+    INSTAGRAM_POST
+    INSTAGRAM_STORY
+    FACEBOOK_POST
+}
+
+
+type Influencer {
+    id: ID! @id
+    email: String
+    name: String
+    surname: String
+    password: String
+    instagram: InstagramData
+    personal: PersonalData
+    pendingTasks: [Task] @relation(link: INLINE, name: "PendingTasksAndInfluencers")
+    activeTasks: [Task] @relation(link: INLINE, name: "ActiveTasksAndInfluencers")
+}
+
+
+type PersonalData {
+    id: ID! @id
+    interests: [Interest] @relation(link: INLINE)
+    bio: String
+}
+
+type Interest {
+    id: ID! @id
+    value: String
+    sinonyms: [String]
+}
+
+type InstagramData {
+    id: ID! @id
+    username: String
+    followers: Integer
+    following: Integer
+    averageLikes: Float
+    postFrequency: Float
+    storyFrequency: Float
+    frequentHashtags: [String]
+    cookies: String # if i'm able to get those
+    accessToken: String
+}
+
+
+
+
